@@ -1,0 +1,39 @@
+{
+	"name": "file-tree-generator",
+	"displayName": "📁 File Tree Generator",
+	"version": "1.0.0",
+	"description": "Generate a file tree using Obsidian callouts!",
+	"main": "main.js",
+	"scripts": {
+		"dev": "tsup-node --watch ./src",
+		"build": "tsup-node",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [
+		"file",
+		"tree",
+		"file-tree",
+		"generator",
+		"file-tree-generator",
+		"plugin",
+		"obsidian",
+		"obsidian-plugin"
+	],
+	"author": "Unarray",
+	"license": "MIT",
+	"devDependencies": {
+		"@bluzzi/eslint-config": "^1.1.0",
+		"@electron/remote": "^2.0.10",
+		"@types/node": "^16.11.6",
+		"eslint": "^8.47.0",
+		"obsidian": "latest",
+		"tsconfig-paths": "^4.2.0",
+		"tsup": "^7.2.0",
+		"typescript": "4.7.4"
+	},
+	"eslintConfig": {
+		"extends": [
+			"@bluzzi"
+		]
+	}
+}
