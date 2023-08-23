@@ -9,7 +9,7 @@ export class GenerateTree implements Command {
 
   public readonly id = "generate-tree";
 
-  public readonly name = "Generate a File Tree";
+  public readonly name = "generate a file tree";
 
   public editorCallback = async(editor: Editor): Promise<void> => {
     const dialogResponse = await dialog.showOpenDialog({
