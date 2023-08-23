@@ -1,3 +1,6 @@
-export const escapeString = (string: string): string => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+import { escapeString } from "./regex.util";
+
+
+export const beginningString = (string: string): RegExp => {
+  return new RegExp(`^${escapeString(string)}`);
 };
