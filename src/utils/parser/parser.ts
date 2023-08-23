@@ -1,15 +1,13 @@
 import path from "path";
 import type { ExplorerEntity } from "./parser.type";
-import { escapeString } from "#/utils/regex";
 import { haveChilds } from "./parser.util";
 
-export const filesToExplorerEntity = (files: string[], removeBasePath = "", separator: string | null = null): ExplorerEntity => {
+export const filesToExplorerEntity = (files: string[], separator: string | null = null): ExplorerEntity => {
   separator = separator ?? path.sep;
-  const regex = new RegExp(`^${escapeString(removeBasePath)}`);
   const structure: ExplorerEntity = {};
 
   for (const file of files) {
-    const parts = file.replace(regex, "").split(separator);
+    const parts = file.split(separator);
     let current = structure;
 
     for (const part of parts) {
