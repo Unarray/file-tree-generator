@@ -5,7 +5,7 @@ import { haveChilds } from "./parser.util";
 
 export const filesToExplorerEntity = (files: string[], removeBasePath = "", separator: string | null = null): ExplorerEntity => {
   separator = separator ?? path.sep;
-  const regex = new RegExp(`/^${escapeString(removeBasePath)}/`);
+  const regex = new RegExp(`^${escapeString(removeBasePath)}`);
   const structure: ExplorerEntity = {};
 
   for (const file of files) {
