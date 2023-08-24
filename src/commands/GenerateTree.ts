@@ -24,7 +24,7 @@ export class GenerateTree implements Command {
     const files = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
     const structure = filesToExplorerEntity(files);
     const callouts = explorerEntityToCallout(structure);
-    const cursorLine = editor.getCursor("to").line;
+    const cursorLine = editor.getCursor("head").line;
 
     editor.setLine(
       cursorLine,
