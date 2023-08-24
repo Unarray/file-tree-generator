@@ -1,4 +1,5 @@
 import { GenerateTree } from "#/commands/GenerateTree";
+import { SettingsTab } from "#/settings";
 import type { App, Command, PluginManifest } from "obsidian";
 import { Plugin } from "obsidian";
 
@@ -20,11 +21,16 @@ export default class FileTreeGenerator extends Plugin {
   }
 
 
-  onload(): void {
+  onload = async(): Promise<void> => {
     this.addCommands(
       new GenerateTree()
     );
-  }
+
+    const settingsTab = new SettingsTab(this);
+
+    await settingsTab.loadSettings();
+    this.addSettingTab(settingsTab);
+  };
 
   public addCommands = (...commands: Command[]): void => {
     for (const command of commands) {
