@@ -113,7 +113,23 @@ export class GenerateTree extends Modal {
             const selectedPath = dialogResponse.filePaths[0];
             const removePath = selectedPath.substring(0, selectedPath.lastIndexOf(sep) + sep.length);
             const regex = beginningString(removePath);
-            const rowFiles = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
+            let rowFiles: string[];
+
+            try {
+              rowFiles = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
+            } catch (error) {
+              showNotice = false;
+              notice.hide();
+
+              if (!(error instanceof Error)) {
+                new Notice("❌ error while scanning directory");
+                return;
+              }
+
+              new Notice(`❌ error while scanning directory:\n${error.message}}`);
+              return;
+            }
+
             let files: string[];
 
             if (this.useIgnore) {
