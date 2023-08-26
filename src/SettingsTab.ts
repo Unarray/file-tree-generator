@@ -61,8 +61,4 @@ export class SettingsTab extends PluginSettingTab {
       );
   };
 
-  public getSettings = (): PluginSettings => {
-    return { ...this.settings };
-  };
-
 }
