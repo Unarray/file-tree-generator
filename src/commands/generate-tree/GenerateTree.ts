@@ -1,5 +1,5 @@
 import type { Command, Editor } from "obsidian";
-import { GenerateTree as GenerateTreeModal } from "#/modals";
+import { GenerateTree as GenerateTreeModal } from "#/modals/generate-tree";
 import FileTreeGenerator from "#/FileTreeGenerator";
 
 export class GenerateTree implements Command {

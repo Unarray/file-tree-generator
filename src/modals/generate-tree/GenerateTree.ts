@@ -113,10 +113,14 @@ export class GenerateTree extends Modal {
             const selectedPath = dialogResponse.filePaths[0];
             const removePath = selectedPath.substring(0, selectedPath.lastIndexOf(sep) + sep.length);
             const regex = beginningString(removePath);
-            const files = filter(
-              (await getFiles(selectedPath)).map(file => file.replace(regex, "")),
-              SettingsTab.getInstance().settings.ignore
-            );
+            const rowFiles = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
+            let files: string[];
+
+            if (this.useIgnore) {
+              files = filter(rowFiles, SettingsTab.getInstance().settings.ignore);
+            } else {
+              files = rowFiles;
+            }
 
             showNotice = false;
             notice.hide();
