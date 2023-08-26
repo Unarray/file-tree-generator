@@ -1,10 +1,13 @@
+import { SettingsTab } from "#/SettingsTab";
+import { filter } from "#/utils/filter";
 import { explorerEntityToCallout, filesToExplorerEntity } from "#/utils/parser";
 import { getFiles } from "#/utils/path";
 import { beginningString } from "#/utils/regex";
 import { dialog } from "@electron/remote";
-import type { App, Editor, TextAreaComponent } from "obsidian";
+import type { App, Editor } from "obsidian";
+import type { TextAreaComponent } from "obsidian";
 import { Modal, Notice, Platform, Setting } from "obsidian";
-import { sep as separator } from "path";
+import { sep } from "path";
 
 export class GenerateTree extends Modal {
 
@@ -12,19 +15,33 @@ export class GenerateTree extends Modal {
 
   private useIgnore = true;
 
+  private defaultSeparator = sep ? sep : "/";
+
+  private separator = "";
+
   private filesInput = "";
+
+  private filesTextArea!: TextAreaComponent;
 
   constructor(app: App, editor: Editor) {
     super(app);
     this.editor = editor;
+    this.titleEl.textContent = "Generate file tree";
   }
 
   public onOpen = (): void => {
     const { contentEl } = this;
 
-    contentEl.createEl("h1", { text: "Generate file tree" });
+    this.loadConfigSection(contentEl);
+    this.loadSeparatorSection(contentEl);
+    this.loadFilesSection(contentEl);
+    this.loadGenerateSection(contentEl);
+  };
 
+
+  private loadConfigSection = (contentEl: HTMLElement): void => {
     new Setting(contentEl)
+      .setHeading()
       .setName("Use ignore config")
       .setDesc("filter entries with the ingore configuration in settings")
       .addExtraButton(
@@ -48,24 +65,23 @@ export class GenerateTree extends Modal {
             this.useIgnore = value;
           })
       );
+  };
 
-    let textArea: TextAreaComponent;
-    const filesField = new Setting(contentEl)
+  private loadSeparatorSection = (contentEl: HTMLElement): void => {
+    new Setting(contentEl)
+      .setName("Files/Folders separator")
       .addText(
         (text) => text
-          .setPlaceholder(`Default: ${separator}`)
-      )
-      .addTextArea(
-        (text) => {
-          textArea = text;
-          return text
-            .setPlaceholder("my-folder/toto/titi/hey.md\nmy-folder/tutu/my-video.mp4")
-            .onChange((value) => {
-              this.filesInput = value;
-              console.log("CHANGED!");
-            });
-        }
+          .setPlaceholder(`Default: ${this.defaultSeparator}`)
+          .onChange((value) => {
+            this.separator = value;
+          })
       );
+  };
+
+  private loadFilesSection = (contentEl: HTMLElement): void => {
+    const filesField = new Setting(contentEl);
+    filesField.infoEl.style.flexGrow = "0";
 
     if (Platform.isDesktop) {
       filesField.addExtraButton(
@@ -79,20 +95,59 @@ export class GenerateTree extends Modal {
 
             if (dialogResponse.canceled) return;
 
-            const selectedPath = dialogResponse.filePaths[0];
-            const removePath = selectedPath.substring(0, selectedPath.lastIndexOf(separator) + separator.length);
-            const regex = beginningString(removePath);
-            const files = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
+            const notice = new Notice("", 0);
+            let showNotice = true;
 
+            void (async() => {
+              let dotCount = 0;
+
+              while (showNotice) {
+                notice.setMessage(`🔎 Loading${".".repeat(dotCount)}`);
+                await sleep(400);
+
+                dotCount++;
+                dotCount = dotCount % 4;
+              }
+            })();
+
+            const selectedPath = dialogResponse.filePaths[0];
+            const removePath = selectedPath.substring(0, selectedPath.lastIndexOf(sep) + sep.length);
+            const regex = beginningString(removePath);
+            const files = filter(
+              (await getFiles(selectedPath)).map(file => file.replace(regex, "")),
+              SettingsTab.getInstance().settings.ignore
+            );
+
+            showNotice = false;
+            notice.hide();
             this.filesInput = files.join("\n");
-            textArea.setValue(this.filesInput);
+            this.filesTextArea.setValue(this.filesInput);
           })
       );
     }
 
+    filesField
+      .setName("Files paths")
+      .addTextArea(
+        (text) => {
+          this.filesTextArea = text;
+          text.inputEl.rows = 8;
+          text.inputEl.style.width = "100%";
+
+          return text
+            .setPlaceholder("my-folder/toto/titi/hey.md\nmy-folder/tutu/my-video.mp4")
+            .onChange((value) => {
+              this.filesInput = value;
+            });
+        }
+      );
+  };
+
+  private loadGenerateSection = (contentEl: HTMLElement): void => {
     new Setting(contentEl)
+      .setHeading()
       .addButton((btn) => btn
-        .setButtonText("Generate")
+        .setButtonText("⚙ Generate")
         .setCta()
         .onClick(() => {
           if (this.filesInput.trim() === "") {
@@ -100,7 +155,16 @@ export class GenerateTree extends Modal {
             return;
           }
 
-          const structure = filesToExplorerEntity(this.filesInput.split("\n"));
+          const separator = this.separator ? this.separator : this.defaultSeparator;
+          let files: string[];
+
+          if (this.useIgnore) {
+            files = filter(this.filesInput.split("\n"), SettingsTab.getInstance().settings.ignore);
+          } else {
+            files = this.filesInput.split("\n");
+          }
+
+          const structure = filesToExplorerEntity(files, separator);
           const callouts = explorerEntityToCallout(structure);
           const cursorLine = this.editor.getCursor("head").line;
 
@@ -108,6 +172,7 @@ export class GenerateTree extends Modal {
             cursorLine,
             `${this.editor.getLine(cursorLine)}\n${callouts}`
           );
+
           this.close();
         }));
   };
