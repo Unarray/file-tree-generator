@@ -4,6 +4,16 @@ import { PluginSettingTab, Setting } from "obsidian";
 
 export class SettingsTab extends PluginSettingTab {
 
+  private static instance: SettingsTab;
+
+  private static setInstance = (instance: SettingsTab): void => {
+    SettingsTab.instance = instance;
+  };
+
+  public static getInstance = (): SettingsTab => {
+    return SettingsTab.instance;
+  };
+
   public static DEFAULT_SETTINGS: PluginSettings = {
     ignore: [".git", "node_modules"]
   };
@@ -13,8 +23,10 @@ export class SettingsTab extends PluginSettingTab {
   private plugin: FileTreeGenerator;
 
   constructor(plugin: FileTreeGenerator) {
+
     super(plugin.app, plugin);
     this.plugin = plugin;
+    SettingsTab.setInstance(this);
   }
 
   public loadSettings = async(): Promise<void> => {
@@ -34,14 +46,23 @@ export class SettingsTab extends PluginSettingTab {
       .setName("Ignore patterns")
       .setDesc("This will skip this pattern when generating the tree")
       .addTextArea(
-        (text) => text
-          .setPlaceholder("filters according to .gitignore spec 2.22.1")
-          .setValue(this.settings.ignore.join("\n"))
-          .onChange(async(value) => {
-            this.settings.ignore = value.split("\n");
-            await this.saveSettings();
-          })
+        (text) => {
+          text.inputEl.style.width = "100%";
+          text.inputEl.rows = 8;
+
+          return text
+            .setPlaceholder("filters according to .gitignore spec 2.22.1")
+            .setValue(this.settings.ignore.join("\n"))
+            .onChange(async(value) => {
+              this.settings.ignore = value.split("\n");
+              await this.saveSettings();
+            });
+        }
       );
+  };
+
+  public getSettings = (): PluginSettings => {
+    return { ...this.settings };
   };
 
 }

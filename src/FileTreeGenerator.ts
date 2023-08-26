@@ -1,5 +1,5 @@
+import { SettingsTab } from "./SettingsTab";
 import { GenerateTree } from "#/commands";
-import { SettingsTab } from "#/settings";
 import type { App, Command, PluginManifest } from "obsidian";
 import { Plugin } from "obsidian";
 
