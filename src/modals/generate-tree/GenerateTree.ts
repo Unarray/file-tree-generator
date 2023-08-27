@@ -15,7 +15,7 @@ export class GenerateTree extends Modal {
   private useIgnore = true;
 
   private readonly separators = {
-    platform: sep ? sep : "/",
+    platform: Platform.isDesktop ? sep : "/",
     normal: "/",
     reverse: "\\"
   } as const;
@@ -194,7 +194,7 @@ export class GenerateTree extends Modal {
 
           this.editor.setLine(
             cursorLine,
-            `${this.editor.getLine(cursorLine)}\n${callouts}`
+            `${this.editor.getLine(cursorLine)}\n\n${callouts}`
           );
 
           this.close();
