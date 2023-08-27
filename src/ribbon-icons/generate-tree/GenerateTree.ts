@@ -10,19 +10,23 @@ export class GenerateTree implements RibbonIcon {
   public readonly title: RibbonIconTitle = "Generate file tree";
 
   public execute = (): void => {
-    const editor = FileTreeGenerator.getInstance().getEditor();
+    const activeEditor = FileTreeGenerator.getInstance().getActiveEditor();
 
-    if (!editor) {
+    if (!activeEditor) {
       new Notice("❌ Can only be used during editing");
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const viewType = FileTreeGenerator.getInstance().app.workspace.activeEditor.currentMode.type as string;
+    const viewType = activeEditor.currentMode.type;
 
     if (viewType !== "source") {
+      new Notice("❌ Can only be used during editing");
+      return;
+    }
+
+    const editor = activeEditor.editor;
+
+    if (!editor) {
       new Notice("❌ Can only be used during editing");
       return;
     }

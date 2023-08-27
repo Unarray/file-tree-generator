@@ -1,6 +1,6 @@
 import { SettingsTab } from "./SettingsTab";
 import { GenerateTree as GenerateTreeCommand } from "#/commands/generate-tree";
-import type { App, Command, Editor, PluginManifest } from "obsidian";
+import type { App, Command, MarkdownFileInfo, PluginManifest } from "obsidian";
 import { Plugin } from "obsidian";
 import type { RibbonIcon } from "#/ribbon-icons";
 import { GenerateTree as GenerateTreeIcon } from "#/ribbon-icons/generate-tree";
@@ -47,10 +47,10 @@ export default class FileTreeGenerator extends Plugin {
     return this.addRibbonIcon(ribbonIcon.icon, ribbonIcon.title, ribbonIcon.execute);
   };
 
-  public getEditor = (): Editor | null => {
-    const editor = this.app.workspace.activeEditor?.editor;
+  public getActiveEditor = (): MarkdownFileInfo | null => {
+    const activeEditor = this.app.workspace.activeEditor;
 
-    return editor ? editor : null;
+    return activeEditor ? activeEditor : null;
   };
 
 }

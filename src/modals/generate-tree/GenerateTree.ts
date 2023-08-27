@@ -48,13 +48,7 @@ export class GenerateTree extends Modal {
         (button) => button
           .setTooltip("Open plugin settings")
           .onClick(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             this.app.setting.open();
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             this.app.setting.openTabById("file-tree-generator");
           })
       )
