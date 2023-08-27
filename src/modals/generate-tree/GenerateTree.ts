@@ -1,8 +1,7 @@
 import { SettingsTab } from "#/SettingsTab";
-import { filter } from "#/utils/filter";
+import { filter, getFilter } from "#/utils/filter";
 import { explorerEntityToCallout, filesToExplorerEntity } from "#/utils/parser";
 import { getFiles } from "#/utils/path";
-import { beginningString } from "#/utils/regex";
 import { dialog } from "@electron/remote";
 import type { App, Editor } from "obsidian";
 import type { TextAreaComponent } from "obsidian";
@@ -15,9 +14,15 @@ export class GenerateTree extends Modal {
 
   private useIgnore = true;
 
-  private defaultSeparator = sep ? sep : "/";
+  private readonly separators = {
+    platform: sep ? sep : "/",
+    normal: "/",
+    reverse: "\\"
+  } as const;
 
-  private separator = "";
+  private readonly defaultSeparator: keyof typeof this.separators = "platform";
+
+  private separator = this.defaultSeparator;
 
   private filesInput = "";
 
@@ -36,6 +41,10 @@ export class GenerateTree extends Modal {
     this.loadSeparatorSection(contentEl);
     this.loadFilesSection(contentEl);
     this.loadGenerateSection(contentEl);
+  };
+
+  private isValidSeparatorValue = (value: string): value is keyof typeof this.separators => {
+    return Object.hasOwn(this.separators, value);
   };
 
 
@@ -63,11 +72,17 @@ export class GenerateTree extends Modal {
 
   private loadSeparatorSection = (contentEl: HTMLElement): void => {
     new Setting(contentEl)
-      .setName("Files/Folders separator")
-      .addText(
-        (text) => text
-          .setPlaceholder(`Default: ${this.defaultSeparator}`)
+      .setName("Files/Folders separators")
+      .addDropdown(
+        (drop) => drop
+          .addOptions(this.separators)
+          .setValue(this.defaultSeparator)
           .onChange((value) => {
+            if (!this.isValidSeparatorValue(value)) {
+              new Notice("❌ invalid separator");
+              return;
+            }
+
             this.separator = value;
           })
       );
@@ -106,11 +121,14 @@ export class GenerateTree extends Modal {
 
             const selectedPath = dialogResponse.filePaths[0];
             const removePath = selectedPath.substring(0, selectedPath.lastIndexOf(sep) + sep.length);
-            const regex = beginningString(removePath);
-            let rowFiles: string[];
+            let files: string[];
 
             try {
-              rowFiles = (await getFiles(selectedPath)).map(file => file.replace(regex, ""));
+              files = (await getFiles(
+                selectedPath,
+                this.useIgnore ? getFilter(SettingsTab.getInstance().settings.ignore) : null,
+                removePath
+              ));
             } catch (error) {
               showNotice = false;
               notice.hide();
@@ -122,14 +140,6 @@ export class GenerateTree extends Modal {
 
               new Notice(`❌ error while scanning directory:\n${error.message}}`);
               return;
-            }
-
-            let files: string[];
-
-            if (this.useIgnore) {
-              files = filter(rowFiles, SettingsTab.getInstance().settings.ignore);
-            } else {
-              files = rowFiles;
             }
 
             showNotice = false;
@@ -169,7 +179,7 @@ export class GenerateTree extends Modal {
             return;
           }
 
-          const separator = this.separator ? this.separator : this.defaultSeparator;
+          // const separator = this.separator ? this.separator : this.defaultSeparator;
           let files: string[];
 
           if (this.useIgnore) {
@@ -178,7 +188,7 @@ export class GenerateTree extends Modal {
             files = this.filesInput.split("\n");
           }
 
-          const structure = filesToExplorerEntity(files, separator);
+          const structure = filesToExplorerEntity(files, this.separators[this.separator]);
           const callouts = explorerEntityToCallout(structure);
           const cursorLine = this.editor.getCursor("head").line;
 
