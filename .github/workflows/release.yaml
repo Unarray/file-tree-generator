@@ -4,7 +4,7 @@ name: Release Obsidian plugin
 on:
   push:
     tags:
-      - "*"
+      - "v*"
 
 jobs:
   build:
@@ -33,6 +33,4 @@ jobs:
             --title="$tag" \
             --draft \
             main.js manifest.json styles.css
-
-            name: Release Obsidian plugin
 ...
