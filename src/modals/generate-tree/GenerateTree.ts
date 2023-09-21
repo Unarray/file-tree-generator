@@ -5,6 +5,7 @@ import { getFiles } from "#/utils/path";
 import { dialog } from "@electron/remote";
 import type { App, Editor } from "obsidian";
 import type { TextAreaComponent } from "obsidian";
+import { normalizePath } from "obsidian";
 import { Modal, Notice, Platform, Setting } from "obsidian";
 import { sep } from "path";
 
@@ -14,15 +15,7 @@ export class GenerateTree extends Modal {
 
   private useIgnore = true;
 
-  private readonly separators = {
-    platform: Platform.isDesktop ? sep : "/",
-    normal: "/",
-    reverse: "\\"
-  } as const;
-
-  private readonly defaultSeparator: keyof typeof this.separators = "platform";
-
-  private separator = this.defaultSeparator;
+  private readonly separator = "/";
 
   private filesInput = "";
 
@@ -38,13 +31,8 @@ export class GenerateTree extends Modal {
     const { contentEl } = this;
 
     this.loadConfigSection(contentEl);
-    this.loadSeparatorSection(contentEl);
     this.loadFilesSection(contentEl);
     this.loadGenerateSection(contentEl);
-  };
-
-  private isValidSeparatorValue = (value: string): value is keyof typeof this.separators => {
-    return Object.hasOwn(this.separators, value);
   };
 
 
@@ -66,24 +54,6 @@ export class GenerateTree extends Modal {
           .setValue(this.useIgnore)
           .onChange((value) => {
             this.useIgnore = value;
-          })
-      );
-  };
-
-  private loadSeparatorSection = (contentEl: HTMLElement): void => {
-    new Setting(contentEl)
-      .setName("Files/Folders separators")
-      .addDropdown(
-        (drop) => drop
-          .addOptions(this.separators)
-          .setValue(this.defaultSeparator)
-          .onChange((value) => {
-            if (!this.isValidSeparatorValue(value)) {
-              new Notice("❌ invalid separator");
-              return;
-            }
-
-            this.separator = value;
           })
       );
   };
@@ -179,16 +149,16 @@ export class GenerateTree extends Modal {
             return;
           }
 
-          // const separator = this.separator ? this.separator : this.defaultSeparator;
+          const filesInput = this.filesInput.split("\n").map(path => normalizePath(path));
           let files: string[];
 
           if (this.useIgnore) {
-            files = filter(this.filesInput.split("\n"), SettingsTab.getInstance().settings.ignore);
+            files = filter(filesInput, SettingsTab.getInstance().settings.ignore);
           } else {
-            files = this.filesInput.split("\n");
+            files = filesInput;
           }
 
-          const structure = filesToExplorerEntity(files, this.separators[this.separator]);
+          const structure = filesToExplorerEntity(files, this.separator);
           const callouts = explorerEntityToCallout(structure);
           const cursorLine = this.editor.getCursor("head").line;
 
