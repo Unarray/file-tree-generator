@@ -21,3 +21,12 @@ This patterns follow the [gitignore spec 2.22.1](https://git-scm.com/docs/gitign
 
 ## Note
 This plugin use FS *(desktop only)* to load files from your local directory.
+
+## Installation
+In your vault folder, go to `./.obsidian/plugins/file-tree-generator/`
+Then you can:
+
+Clone this REPO and run `npm run build` or directly download latest plugin release containing `main.js`, `manifest.json` and `versions.json`.
+
+> [!NOTE]
+> If you are a developer, clone this repo -> run `npm i` -> start coding with `npm run dev` *(to hot-reload the plugin in obsidian, install [Hot-Reload plugin](https://github.com/pjeby/hot-reload))*
