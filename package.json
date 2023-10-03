@@ -1,6 +1,6 @@
 {
 	"name": "file-tree-generator",
-	"displayName": "📁 File Tree Generator",
+	"displayName": "File Tree Generator",
 	"version": "1.0.0",
 	"description": "Generate a file tree using Obsidian callouts.",
 	"main": "main.js",
