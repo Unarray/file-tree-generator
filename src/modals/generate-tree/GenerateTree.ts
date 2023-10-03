@@ -3,10 +3,8 @@ import { filter, getFilter } from "#/utils/filter";
 import { explorerEntityToCallout, filesToExplorerEntity } from "#/utils/parser";
 import { getFiles } from "#/utils/path";
 import { dialog } from "@electron/remote";
-import type { App, Editor } from "obsidian";
-import type { TextAreaComponent } from "obsidian";
-import { normalizePath } from "obsidian";
-import { Modal, Notice, Platform, Setting } from "obsidian";
+import type { TextAreaComponent, App, Editor } from "obsidian";
+import { Modal, Notice, Platform, Setting, normalizePath } from "obsidian";
 import { sep } from "path";
 
 export class GenerateTree extends Modal {
@@ -82,6 +80,7 @@ export class GenerateTree extends Modal {
 
               while (showNotice) {
                 notice.setMessage(`🔎 Loading${".".repeat(dotCount)}`);
+
                 await sleep(400);
 
                 dotCount++;
